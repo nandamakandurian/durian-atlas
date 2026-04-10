@@ -1,0 +1,46 @@
+x-host-gateway: &host-gateway
+  extra_hosts:
+    - host.docker.internal:host-gateway
+
+services:
+  settlement-scheduler:
+    <<: *host-gateway
+    build:
+      context: ../../../settlement_scheduler_cron
+      dockerfile: Dockerfile
+    restart: "no"
+    depends_on:
+      settlement-service-api:
+        condition: service_healthy
+    environment:
+      APP_NAME: settlement-scheduler-cron
+      APP_PORT: 8081
+      METRICS_PORT: 9091
+      GRPC_ADDR: :50062
+      KAFKA_CLIENT_ID: settlement-scheduler-cron
+    command: ["/app/settlement_scheduler_cron", "start"]
+
+  settlement-email-reader:
+    <<: *host-gateway
+    build:
+      context: ../../../settlement_email_reader
+      dockerfile: Dockerfile
+    restart: "no"
+    depends_on:
+      settlement-service-api:
+        condition: service_healthy
+      settlement-service-consumer:
+        condition: service_started
+    environment:
+      APP_NAME: settlement-email-reader
+      APP_PORT: 8082
+      METRICS_PORT: 9092
+      GRPC_ADDR: :50063
+      KAFKA_CLIENT_ID: settlement-email-reader
+      CONSUL_SETTLEMENT_EMAIL_READER_CONFIG_PATH: settlement_email_reader/local
+      OUTLOOK_CLIENT_ID: change-me
+      OUTLOOK_SECRET: change-me
+      OUTLOOK_TENANT_ID: change-me
+      JOKULDOKU_DIRECT_MERCHANT_PASSWORD: change-me
+      DANAMON_GROUP_CODE: change-me
+    command: ["/app/settlement_email_reader", "start"]

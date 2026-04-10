@@ -1,0 +1,31 @@
+--- dpay-common/db/migrations/20230227014107_add_new_invoice_permission_and_role_mapping.up.sql
++++ dpay-common/db/migrations/20230227014107_add_new_invoice_permission_and_role_mapping.up.sql
+@@ -1,3 +1,7 @@
++INSERT INTO "role" ("name", description)
++SELECT 'Admin', 'A role with full authority access to all pages and menu within dashboard'
++WHERE NOT EXISTS (SELECT 1 FROM "role" WHERE name = 'Admin');
++
+ INSERT INTO permissions ("name",code, created_at, updated_at) VALUES
+	 ('Invoice View','invoice.view', NOW(), NOW()),
+      ('Invoice Create','invoice.create', NOW(), NOW());
+--- dpay-common/db/migrations/20230306080719_add_new_dashboard_role_developer.up.sql
++++ dpay-common/db/migrations/20230306080719_add_new_dashboard_role_developer.up.sql
+@@ -1,3 +1,3 @@
+-INSERT INTO "role"
+-("name", description)
+-VALUES('Developer', 'Developer');
+\ No newline at end of file
++INSERT INTO "role" ("name", description)
++SELECT 'Developer', 'Developer'
++WHERE NOT EXISTS (SELECT 1 FROM "role" WHERE name = 'Developer');
+\ No newline at end of file
+--- dpay-common/db/migrations/20230306080720_insert_developer_role_permissions.up.sql
++++ dpay-common/db/migrations/20230306080720_insert_developer_role_permissions.up.sql
+@@ -1,3 +1,7 @@
++INSERT INTO permissions (name, code, created_at, updated_at)
++SELECT 'Export View', 'export.view', NOW(), NOW()
++WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code = 'export.view');
++
+ INSERT INTO public.role_permissions (role_id,permission_id, created_at, updated_at) VALUES
+ 	 ((Select id from "role" where name='Developer'),(Select id from permissions where code='home.view'), NOW(), NOW()),
+      ((Select id from "role" where name='Developer'),(Select id from permissions where code='payment.view'), NOW(), NOW()),

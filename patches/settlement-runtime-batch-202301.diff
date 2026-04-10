@@ -1,0 +1,9 @@
+--- dpay-common/db/migrations/20230119020749_add_order_table_index.up.sql
++++ dpay-common/db/migrations/20230119020749_add_order_table_index.up.sql
+@@ -1,2 +1,2 @@
+-CREATE INDEX CONCURRENTLY order_order_ref_id_idx ON "order"(order_ref_id);
+-CREATE INDEX CONCURRENTLY order_order_ds_ref_id_idx ON "order"(order_ds_ref_id);
+\ No newline at end of file
++CREATE INDEX IF NOT EXISTS order_order_ref_id_idx ON "order"(order_ref_id);
++CREATE INDEX IF NOT EXISTS order_order_ds_ref_id_idx ON "order"(order_ds_ref_id);
+\ No newline at end of file

@@ -1,0 +1,27 @@
+--- dpay-common/db/migrations/20260203063637_add_paylabs_payment_provider.up.sql
++++ dpay-common/db/migrations/20260203063637_add_paylabs_payment_provider.up.sql
+@@ -1,3 +1,7 @@
++INSERT INTO "public"."payment_method" ("name", "logo", "unique_id", "category")
++SELECT 'Nobu', '', 'NOBU', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM "public"."payment_method" WHERE unique_id = 'NOBU');
++
+ INSERT INTO "public"."payment_provider" ("id", "name", "logo", "unique_id", "is_active") VALUES (DEFAULT, 'PAYLABS', 'https://pigment.github.io/fake-logos/logos/medium/color/9.png', 'PAYLABS', 't');
+ 
+ INSERT INTO "public"."pg_service_level_agreement"
+--- dpay-common/db/migrations/20260203073812_add_paylabs_payment_method.up.sql
++++ dpay-common/db/migrations/20260203073812_add_paylabs_payment_method.up.sql
+@@ -1,10 +1,7 @@
+-INSERT INTO payment_method
+-    (name, logo, unique_id, category)
+-VALUES
+-    ('MAYBANK', '///js.durianpay.id/assets/maybank-logo.svg', 'MAYBANK', 'VA'),
+-    ('MUAMALAT', '///js.durianpay.id/assets/muamalat-logo.svg', 'MUAMALAT', 'VA'),
+-    ('SINARMAS', '///js.durianpay.id/assets/sinarmas-logo.svg', 'SINARMAS', 'VA'),
+-    ('BNC', '///js.durianpay.id/assets/bnc-logo.svg', 'BNC', 'VA');
++INSERT INTO payment_method (name, logo, unique_id, category) SELECT 'MAYBANK', '///js.durianpay.id/assets/maybank-logo.svg', 'MAYBANK', 'VA' WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'MAYBANK');
++INSERT INTO payment_method (name, logo, unique_id, category) SELECT 'MUAMALAT', '///js.durianpay.id/assets/muamalat-logo.svg', 'MUAMALAT', 'VA' WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'MUAMALAT');
++INSERT INTO payment_method (name, logo, unique_id, category) SELECT 'SINARMAS', '///js.durianpay.id/assets/sinarmas-logo.svg', 'SINARMAS', 'VA' WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'SINARMAS');
++INSERT INTO payment_method (name, logo, unique_id, category) SELECT 'BNC', '///js.durianpay.id/assets/bnc-logo.svg', 'BNC', 'VA' WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'BNC');
+ 
+ INSERT INTO "public"."pg_service_level_agreement"
+ (payment_provider, payment_details_type, service_level_agreement, cutoff_time, method_unique_id)

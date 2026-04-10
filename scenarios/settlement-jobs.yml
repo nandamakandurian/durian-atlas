@@ -1,0 +1,6 @@
+
+include:
+  - ../compose/infra.yml
+  - ../compose/infra-seed.yml
+  - ../compose/settlement.yml
+  - ../compose/settlement-jobs.yml

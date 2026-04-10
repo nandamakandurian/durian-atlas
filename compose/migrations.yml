@@ -1,0 +1,58 @@
+services:
+  migrate-settlement:
+    image: migrate/migrate:v4.18.3
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../../../dpay-common/db/migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database
+      - postgres://dpay:dpay@postgres:5432/settlement?sslmode=disable
+      - up
+
+  migrate-corebanking:
+    image: migrate/migrate:v4.18.3
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../../../dpay-core-banking/infra/pg/migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database
+      - postgres://dpay:dpay@postgres:5432/corebanking?sslmode=disable
+      - up
+
+  migrate-reconciliation:
+    image: migrate/migrate:v4.18.3
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../../../dpay-core-banking/infra/pg/reconciliation_migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database
+      - postgres://dpay:dpay@postgres:5432/reconciliation?sslmode=disable
+      - up
+
+  postgres-seed:
+    image: postgres:16-alpine
+    restart: "no"
+    depends_on:
+      migrate-settlement:
+        condition: service_completed_successfully
+      migrate-corebanking:
+        condition: service_completed_successfully
+      migrate-reconciliation:
+        condition: service_completed_successfully
+    environment:
+      PGPASSWORD: dpay
+    volumes:
+      - ../scripts/seed-postgres.sh:/scripts/seed-postgres.sh:ro
+    entrypoint: ["sh", "/scripts/seed-postgres.sh"]

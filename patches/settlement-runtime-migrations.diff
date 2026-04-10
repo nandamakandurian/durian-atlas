@@ -1,0 +1,190 @@
+--- dpay-common/db/migrations/1596719599_initial_schema.up.sql
++++ dpay-common/db/migrations/1596719599_initial_schema.up.sql
+@@ -32,9 +32,10 @@
+ CREATE TYPE "payment_details" AS ENUM (
+   'card_details',
+   'va_details',
+   'ewallet_details',
++  'qris_details',
+   'direct_debit_details',
+   'cardless_details',
+   'retail_outlet_details',
+   'qrcode_details'
+ );
+--- dpay-common/db/migrations/20200916141033_category_in_payment_methods.up.sql
++++ dpay-common/db/migrations/20200916141033_category_in_payment_methods.up.sql
+@@ -1,7 +1,8 @@
+ CREATE TYPE "payment_method_types" AS ENUM (
+   'VA',
+   'EWALLET',
+-  'CARD'
++  'CARD',
++  'QRIS'
+ );
+ 
+ alter table "payment_method" add column "category" payment_method_types;
+--- dpay-common/db/migrations/20201029133722_create_promos_table.up.sql
++++ dpay-common/db/migrations/20201029133722_create_promos_table.up.sql
+@@ -11,7 +11,8 @@
+ 
+ CREATE TYPE "promo_type" AS ENUM (
+   'card_promos',
+   'ewallet_promos',
+-  'va_promos'
++  'va_promos',
++  'qris_promo'
+ );
+ 
+ CREATE TABLE "card_promos" (
+--- dpay-common/db/migrations/20210325232952_add_table_merchant_service_level_agreement.up.sql
++++ dpay-common/db/migrations/20210325232952_add_table_merchant_service_level_agreement.up.sql
+@@ -1,7 +1,9 @@
+ CREATE TYPE "payment_details_type" AS ENUM (
+   'va_details',
+   'card_details',
+-  'ewallet_details'
++  'ewallet_details',
++  'retail_store_details',
++  'qris_details'
+ );
+ 
+ CREATE TABLE "merchant_service_level_agreement" (
+--- dpay-common/db/migrations/20210615161154_insert_sla_values_for_shopeepay_and_retail_store.up.sql
++++ dpay-common/db/migrations/20210615161154_insert_sla_values_for_shopeepay_and_retail_store.up.sql
+@@ -1,5 +1,5 @@
+-ALTER TYPE "payment_details_type" ADD VALUE IF NOT EXISTS 'retail_store_details';
+-
++SELECT setval(pg_get_serial_sequence('merchant_service_level_agreement', 'id'), (SELECT MAX(id) FROM merchant_service_level_agreement));
++SELECT setval(pg_get_serial_sequence('pg_service_level_agreement', 'id'), (SELECT MAX(id) FROM pg_service_level_agreement));
+ INSERT INTO "merchant_service_level_agreement"
+ (payment_details_type, payment_sub_channeL, service_level_agreement, cutoff_time)
+ VALUES 
+--- dpay-common/db/migrations/20211228133012_add_oy_payment_provider.up.sql
++++ dpay-common/db/migrations/20211228133012_add_oy_payment_provider.up.sql
+@@ -1,2 +1,4 @@
++SELECT setval(pg_get_serial_sequence('payment_provider', 'id'), (SELECT MAX(id) FROM payment_provider));
++
+ INSERT INTO payment_provider (name, unique_id, logo)
+ VALUES ('Oy', 'OY', 'https://pigment.github.io/fake-logos/logos/medium/color/1.png');
+--- dpay-common/db/migrations/20210820102529_add_support_for_qris_payment_with_bni.up.sql
++++ dpay-common/db/migrations/20210820102529_add_support_for_qris_payment_with_bni.up.sql
+@@ -1,8 +1,4 @@
+-ALTER TYPE payment_method_types ADD VALUE IF NOT EXISTS 'QRIS';
+-ALTER TYPE payment_details ADD VALUE IF NOT EXISTS 'qris_details';
+-ALTER TYPE payment_details_type ADD VALUE IF NOT EXISTS 'qris_details';
+-ALTER TYPE promo_type ADD VALUE IF NOT EXISTS 'qris_promo';
+ 
+ CREATE TABLE "qris_details" (
+   "id" varchar(255) PRIMARY KEY,
+   "qr_string" varchar(255),
+--- dpay-common/db/migrations/20211228091507_add_service_level_agreement_midtrans.up.sql
++++ dpay-common/db/migrations/20211228091507_add_service_level_agreement_midtrans.up.sql
+@@ -1,3 +1,8 @@
++SELECT setval(pg_get_serial_sequence('payment_provider', 'id'), (SELECT MAX(id) FROM payment_provider));
++
++INSERT INTO payment_provider (name, unique_id, logo)
++SELECT 'Midtrans', 'MIDTRANS', 'https://pigment.github.io/fake-logos/logos/medium/color/1.png'
++WHERE NOT EXISTS (SELECT 1 FROM payment_provider WHERE unique_id = 'MIDTRANS');
+ INSERT INTO pg_service_level_agreement 
+ ("payment_details_type", "payment_sub_channel", "service_level_agreement", "cutoff_time", "payment_provider")
+ VALUES
+--- dpay-common/db/migrations/20220512174138_add_midtrans_va_method_limit.up.sql
++++ dpay-common/db/migrations/20220512174138_add_midtrans_va_method_limit.up.sql
+@@ -1,3 +1,19 @@
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'BCA', '', 'BCA', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'BCA');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'BNI', '', 'BNI', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'BNI');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'BRI', '', 'BRI', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'BRI');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'Permata', '', 'PERMATA', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'PERMATA');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'Mandiri', '', 'MANDIRI', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'MANDIRI');
++
+ INSERT INTO public.payment_provider_method_limit
+ (payment_provider_id, payment_method_id, min_limit, max_limit)
+ values
+--- dpay-common/db/migrations/20220620093356_add_linkaja_provider_amount_limit.up.sql
++++ dpay-common/db/migrations/20220620093356_add_linkaja_provider_amount_limit.up.sql
+@@ -1,3 +1,7 @@
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'LinkAja', '', 'LINKAJA', 'EWALLET'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'LINKAJA');
++
+ INSERT INTO payment_provider_method_limit
+ (payment_provider_id, payment_method_id, min_limit, max_limit)
+ values
+--- dpay-common/db/migrations/20220712205359_add_maker_can_topup.up.sql
++++ dpay-common/db/migrations/20220712205359_add_maker_can_topup.up.sql
+@@ -1,3 +1,7 @@
++INSERT INTO "public"."role" ("name", description)
++SELECT 'Maker', 'A role with special access of creating trasaction related to the disbursement/refund'
++WHERE NOT EXISTS (SELECT 1 FROM public.role WHERE name = 'Maker');
++
+ INSERT INTO "public"."role_permissions" 
+     ("id", "role_id", "permission_id", "created_at", "updated_at") 
+ VALUES (
+--- dpay-core-banking/infra/pg/migrations/20231118142252_add_unique_index_disbursement_transaction.up.sql
++++ dpay-core-banking/infra/pg/migrations/20231118142252_add_unique_index_disbursement_transaction.up.sql
+@@ -1 +1 @@
+-CREATE UNIQUE INDEX CONCURRENTLY disbursement_transaction_disbursement_unique_id_idx ON disbursement_transaction(disbursement_id) WHERE status IN ('success', 'processing');
++CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS disbursement_transaction_disbursement_unique_id_idx ON disbursement_transaction(disbursement_id) WHERE status IN ('success', 'processing');
+--- dpay-core-banking/infra/pg/migrations/20250217061646_add_va_bri_mapping.up.sql
++++ dpay-core-banking/infra/pg/migrations/20250217061646_add_va_bri_mapping.up.sql
+@@ -1,3 +1,8 @@
++INSERT INTO bank
++(dp_code, bank_name, swift_code, atm_code, created_at, updated_at)
++VALUES('va_bri', 'BRI Virtual Account', 'BRINIDJA', '002', now() at time zone 'utc', now() at time zone 'utc')
++ON CONFLICT (dp_code) DO NOTHING;
++
+ INSERT INTO provider_bank_mapping
+ (dp_code, provider_unique_id, provider_code, method_unique_id, is_topup_supported, "topup_type", topup_limit, is_disbursement_supported, disbursement_limit, created_at, updated_at)
+ VALUES('va_bri', 'FLIP', 'va_bri', 'AGGREGATED_TRANSFER', false, null, '{}'::jsonb, true, '{"max": 25000000000, "min": 1000000}'::jsonb, now() at time zone 'utc', now() at time zone 'utc');
+--- dpay-core-banking/infra/pg/migrations/20250221031340_seed_new_provider_bank_mapping_flip_provider.up.sql
++++ dpay-core-banking/infra/pg/migrations/20250221031340_seed_new_provider_bank_mapping_flip_provider.up.sql
+@@ -1,6 +1,13 @@
++INSERT INTO bank (dp_code, bank_name, swift_code, atm_code, created_at, updated_at)
++VALUES
++    ('btn_syr', 'BTN Syariah', 'SYBTIDJ1', '928', NOW(), NOW()),
++    ('fama', 'Bank Fama International', 'FAMAIDJ1', '016', NOW(), NOW()),
++    ('bisnis', 'Bank Bisnis Internasional', 'BUSTIDJ1', '011', NOW(), NOW())
++ON CONFLICT (dp_code) DO NOTHING;
++
+ INSERT INTO provider_bank_mapping (dp_code, provider_unique_id, provider_code, method_unique_id, is_topup_supported, topup_type, topup_limit, is_disbursement_supported, disbursement_limit, created_at, updated_at)
+ VALUES 
+	('btn_syr', 'FLIP', 'btn_syr', 'AGGREGATED_TRANSFER', false, NULL, '{}', true, '{"max": 5000000000, "min": 1000000}', NOW(), NOW()), 
+	('fama', 'FLIP', 'super_bank', 'AGGREGATED_TRANSFER', false, NULL, '{}', true, '{"max": 5000000000, "min": 1000000}', NOW(), NOW()), 
+	('bisnis', 'FLIP', 'krom', 'AGGREGATED_TRANSFER', false, NULL, '{}', true, '{"max": 5000000000, "min": 1000000}', NOW(), NOW())
+ ON CONFLICT DO NOTHING;
+
+--- dpay-core-banking/infra/pg/migrations/20250312064020_add_ewallet_provider_bank_mapping.up.sql
++++ dpay-core-banking/infra/pg/migrations/20250312064020_add_ewallet_provider_bank_mapping.up.sql
+@@ -1,3 +1,12 @@
++INSERT INTO bank (dp_code, bank_name, swift_code, atm_code, created_at, updated_at)
++VALUES
++    ('dana', 'Dana', 'DANA', 'DANA', now() at time zone 'utc', now() at time zone 'utc'),
++    ('gopay', 'GoPay', 'GOPAY', 'GOPAY', now() at time zone 'utc', now() at time zone 'utc'),
++    ('linkaja', 'LinkAja', 'LINKAJA', 'LINKAJA', now() at time zone 'utc', now() at time zone 'utc'),
++    ('ovo', 'OVO', 'OVO', 'OVO', now() at time zone 'utc', now() at time zone 'utc'),
++    ('shopeepay', 'ShopeePay', 'SHOPEEPAY', 'SHOPEEPAY', now() at time zone 'utc', now() at time zone 'utc')
++ON CONFLICT (dp_code) DO NOTHING;
++
+ INSERT INTO public.provider_bank_mapping
+ (dp_code, provider_unique_id, provider_code, method_unique_id, is_topup_supported, "topup_type", topup_limit, is_disbursement_supported, disbursement_limit, created_at, updated_at, is_validation_supported)
+ VALUES
+--- dpay-core-banking/infra/pg/migrations/20250321130127_add_nobu_provider_method_mapping.up.sql
++++ dpay-core-banking/infra/pg/migrations/20250321130127_add_nobu_provider_method_mapping.up.sql
+@@ -1,3 +1,7 @@
++INSERT INTO bank (dp_code, bank_name, swift_code, atm_code, created_at, updated_at)
++VALUES('bca', 'Bank Central Asia', 'CENAIDJA', '014', now() at time zone 'utc', now() at time zone 'utc')
++ON CONFLICT (dp_code) DO NOTHING;
++
+ INSERT INTO provider_bank_mapping
+ (dp_code, provider_unique_id, provider_code, method_unique_id, is_topup_supported, "topup_type", topup_limit, is_disbursement_supported, disbursement_limit, created_at, updated_at, is_validation_supported)
+ VALUES('bca', 'NOBU', 'CENAIDJA', 'BI_FAST', false, null, '{}'::jsonb, true, '{"max": 25000000000, "min": 1000000}'::jsonb, now() at time zone 'utc', now() at time zone 'utc', true);

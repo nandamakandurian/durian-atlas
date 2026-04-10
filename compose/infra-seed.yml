@@ -1,0 +1,20 @@
+services:
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    restart: "no"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ../scripts/init-kafka.sh:/scripts/init-kafka.sh:ro
+    entrypoint: ["/bin/bash", "/scripts/init-kafka.sh"]
+
+  consul-seed:
+    image: alpine/curl:8.17.0
+    restart: "no"
+    depends_on:
+      consul:
+        condition: service_healthy
+    volumes:
+      - ../scripts/init-consul.sh:/scripts/init-consul.sh:ro
+    entrypoint: ["sh", "/scripts/init-consul.sh"]

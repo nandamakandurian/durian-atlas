@@ -1,0 +1,33 @@
+--- dpay-common/db/migrations/20230309110244_adding_foreign_key_constraints.up.sql
++++ dpay-common/db/migrations/20230309110244_adding_foreign_key_constraints.up.sql
+@@ -1,3 +1,30 @@
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'Card', '', 'CARD', 'CARD'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'CARD');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'Dana', '', 'DANA', 'EWALLET'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'DANA');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'GoPay', '', 'GOPAY', 'EWALLET'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'GOPAY');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'Indormart', '', 'INDORMART', 'RETAILSTORE'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'INDORMART');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'Others', '', 'OTHERS', 'VA'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'OTHERS');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'OVO', '', 'OVO', 'EWALLET'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'OVO');
++INSERT INTO payment_method (name, logo, unique_id, category)
++SELECT 'ShopeePay', '', 'SHOPEEPAY', 'EWALLET'
++WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE unique_id = 'SHOPEEPAY');
++
++INSERT INTO payment_provider (name, unique_id, logo) SELECT 'Dana', 'DANA', '' WHERE NOT EXISTS (SELECT 1 FROM payment_provider WHERE unique_id = 'DANA');
++INSERT INTO payment_provider (name, unique_id, logo) SELECT 'Doku', 'DOKU', '' WHERE NOT EXISTS (SELECT 1 FROM payment_provider WHERE unique_id = 'DOKU');
++INSERT INTO payment_provider (name, unique_id, logo) SELECT 'Faspay', 'FASPAY', '' WHERE NOT EXISTS (SELECT 1 FROM payment_provider WHERE unique_id = 'FASPAY');
++INSERT INTO payment_provider (name, unique_id, logo) SELECT 'Xendit', 'XENDIT', '' WHERE NOT EXISTS (SELECT 1 FROM payment_provider WHERE unique_id = 'XENDIT');
++
+ -- Data fix
+ UPDATE settlement_fee_pricing SET sub_channel = NULL WHERE sub_channel = '';
+ 
