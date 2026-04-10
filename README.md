@@ -11,8 +11,8 @@ It brings up the supporting infrastructure, runs migrations, launches settlement
 
 - `make infra` boots the base infrastructure.
 - `make migrate` applies runtime patches and runs migrations when the databases are still empty.
-- `make settlement` starts the settlement services.
-- `make jobs` starts the settlement jobs on top of the running stack.
+- `make settlement-svc` starts the settlement services.
+- `make settlement-jobs` starts the settlement jobs on top of the running stack.
 - `make db-dump` and `make db-restore` snapshot and restore the databases.
 - `make clean` tears the stack down.
 
@@ -26,13 +26,13 @@ Starts the base local infrastructure from `scenarios/infra.yml` and waits until 
 
 Depends on `infra`, so it boots the base stack first if needed. Then it checks whether the settlement database already has `schema_migrations`; if it does, Atlas skips the migration flow. If the database is still empty, Atlas applies the runtime migration patch, runs the migration stack from `scenarios/migrations.yml`, and reverts the patch afterward.
 
-`make settlement`
+`make settlement-svc`
 
 Depends on `migrate`, so Atlas ensures infrastructure and schema are ready first. Then it builds and starts the settlement API and consumer from `scenarios/settlement.yml`, and follows their logs so you can watch the services come up.
 
-`make jobs`
+`make settlement-jobs`
 
-Depends on `settlement`, so the core settlement services are already running before the jobs start. Then it builds and launches the scheduler and email reader from `scenarios/settlement-jobs.yml`, and tails their logs.
+Depends on `settlement-svc`, so the core settlement services are already running before the jobs start. Then it builds and launches the scheduler and email reader from `scenarios/settlement-jobs.yml`, and tails their logs.
 
 `make db-dump`
 
@@ -60,8 +60,8 @@ Fill `.env` with absolute paths for the sibling repositories Atlas depends on.
 ```sh
 make infra
 make migrate
-make settlement
-make jobs
+make settlement-svc
+make settlement-jobs
 ```
 
 If any of those paths are missing, compose now fails fast instead of silently assuming the same directory structure for every user.

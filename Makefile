@@ -1,4 +1,4 @@
-.PHONY: infra migrate settlement jobs db-dump db-restore clean
+.PHONY: infra migrate settlement-svc settlement-jobs db-dump db-restore clean
 
 infra:
 	docker compose -p mini-universe -f scenarios/infra.yml up -d --wait
@@ -16,11 +16,11 @@ migrate: infra
 		./scripts/revert-runtime-migration-patch.sh; \
 	fi
 
-settlement: migrate
+settlement-svc: migrate
 	docker compose -p mini-universe -f scenarios/settlement.yml up --build -d
 	docker compose -p mini-universe -f scenarios/settlement.yml logs -f settlement-service-api settlement-service-consumer
 
-jobs: settlement
+settlement-jobs: settlement-svc
 	docker compose -p mini-universe -f scenarios/settlement-jobs.yml up --build -d
 	docker compose -p mini-universe -f scenarios/settlement-jobs.yml logs -f settlement-scheduler settlement-email-reader
 
