@@ -6,7 +6,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ../../../dpay-common/db/migrations:/migrations:ro
+      - ${DPAY_COMMON_DIR:?DPAY_COMMON_DIR is required}/db/migrations:/migrations:ro
     command:
       - -path=/migrations
       - -database
@@ -20,7 +20,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ../../../dpay-core-banking/infra/pg/migrations:/migrations:ro
+      - ${DPAY_CORE_BANKING_DIR:?DPAY_CORE_BANKING_DIR is required}/infra/pg/migrations:/migrations:ro
     command:
       - -path=/migrations
       - -database
@@ -34,7 +34,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ../../../dpay-core-banking/infra/pg/reconciliation_migrations:/migrations:ro
+      - ${DPAY_CORE_BANKING_DIR:?DPAY_CORE_BANKING_DIR is required}/infra/pg/reconciliation_migrations:/migrations:ro
     command:
       - -path=/migrations
       - -database

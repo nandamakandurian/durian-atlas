@@ -6,7 +6,7 @@ services:
   settlement-scheduler:
     <<: *host-gateway
     build:
-      context: ../../../settlement_scheduler_cron
+      context: ${SETTLEMENT_SCHEDULER_CRON_DIR:?SETTLEMENT_SCHEDULER_CRON_DIR is required}
       dockerfile: Dockerfile
     restart: "no"
     depends_on:
@@ -23,7 +23,7 @@ services:
   settlement-email-reader:
     <<: *host-gateway
     build:
-      context: ../../../settlement_email_reader
+      context: ${SETTLEMENT_EMAIL_READER_DIR:?SETTLEMENT_EMAIL_READER_DIR is required}
       dockerfile: Dockerfile
     restart: "no"
     depends_on:

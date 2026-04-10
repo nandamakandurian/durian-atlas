@@ -6,7 +6,7 @@ services:
   settlement-service-api:
     <<: *host-gateway
     build:
-      context: ../../../settlement_service
+      context: ${SETTLEMENT_SERVICE_DIR:?SETTLEMENT_SERVICE_DIR is required}
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
@@ -40,7 +40,7 @@ services:
   settlement-service-consumer:
     <<: *host-gateway
     build:
-      context: ../../../settlement_service
+      context: ${SETTLEMENT_SERVICE_DIR:?SETTLEMENT_SERVICE_DIR is required}
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:

@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - settlement_postgres_data:/var/lib/postgresql/data
-      - ../../../settlement_service/scripts/init-db.sql:/docker-entrypoint-initdb.d/001-init-db.sql:ro
+      - ${SETTLEMENT_SERVICE_DIR:?SETTLEMENT_SERVICE_DIR is required}/scripts/init-db.sql:/docker-entrypoint-initdb.d/001-init-db.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dpay -d settlement"]
       interval: 5s
