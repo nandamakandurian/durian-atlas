@@ -16,6 +16,36 @@ It brings up the supporting infrastructure, runs migrations, launches settlement
 - `make db-dump` and `make db-restore` snapshot and restore the databases.
 - `make clean` tears the stack down.
 
+## Makefile Commands
+
+`make infra`
+
+Starts the base local infrastructure from `scenarios/infra.yml` and waits until the services are healthy. This is the foundation Atlas stands on: Postgres, Redis, Kafka, Consul, and the seed containers that prepare the environment.
+
+`make migrate`
+
+Depends on `infra`, so it boots the base stack first if needed. Then it checks whether the settlement database already has `schema_migrations`; if it does, Atlas skips the migration flow. If the database is still empty, Atlas applies the runtime migration patch, runs the migration stack from `scenarios/migrations.yml`, and reverts the patch afterward.
+
+`make settlement`
+
+Depends on `migrate`, so Atlas ensures infrastructure and schema are ready first. Then it builds and starts the settlement API and consumer from `scenarios/settlement.yml`, and follows their logs so you can watch the services come up.
+
+`make jobs`
+
+Depends on `settlement`, so the core settlement services are already running before the jobs start. Then it builds and launches the scheduler and email reader from `scenarios/settlement-jobs.yml`, and tails their logs.
+
+`make db-dump`
+
+Creates the `dumps/` directory if it does not exist, then exports clean SQL dumps for the `settlement`, `corebanking`, and `reconciliation` databases from the running Postgres container.
+
+`make db-restore`
+
+Depends on `infra`, so Postgres is available first. Then Atlas drops and recreates the `settlement`, `corebanking`, and `reconciliation` databases and restores them from the SQL files in `dumps/`.
+
+`make clean`
+
+Tears down the jobs, settlement, migration, and infrastructure stacks in reverse order and removes their volumes. Use this when you want Atlas to put the whole local world back down.
+
 ## Quick Start
 
 Set the external repository paths first. Atlas carries the stack, but it cannot assume every machine keeps the world in the same place.
